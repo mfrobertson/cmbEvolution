@@ -24,5 +24,8 @@ class TransferFuncs:
             transferFuncs = data.get_time_evolution(self.ks, self.times, [monopole_source/visibility])
             return transferFuncs
 
+        transferFuncs = data.get_time_evolution(self.ks, self.times, [self.source])
+        return transferFuncs
+
     def saveFuncs(self, name):
         np.save(f"TFs/{name}", self.tfs)
