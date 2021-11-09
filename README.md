@@ -1,7 +1,7 @@
 # cmbEvolution
 
 ### Description
-Basic scripts for creating and evolving fields with CAMB transfer functions.
+Basic scripts for creating and evolving fields with [CAMB](https://camb.info/) transfer functions.
 
 ### Examples
 For examples of creating instances of scale invariant fields and evolving them with transfer functions, see ```fieldRealisation.ipynb```.
