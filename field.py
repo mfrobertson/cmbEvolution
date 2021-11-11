@@ -22,22 +22,36 @@ class Field:
     def kMatrix(self):
         return Kmatrix(self.N, self.scale).kM
 
-    def drawField(self, title=None, clims=None, cbar=True):
+    def drawField(self, title=None, clims=None, cbar=True, units=False):
         if self.space == "physical":
             extent = [0, self.scale, 0, self.scale]
-            field = self.field
+            if units:
+                field = self.field * 2.72e6*2*np.pi**2
+                cbTitle = "$\Delta\mu$K"
+            else:
+                field = self.field
+                cbTitle = None
             xlabel = "$x$ [Mpc]"
             ylabel = "$y$ [Mpc]"
+
         else:
-            extent = [0, np.pi * self.N / self.scale, np.pi * self.N / self.scale, 0]
+            if units:
+                maximum = 13900 * np.pi * self.N / self.scale
+                xlabel = "$l_x$"
+                ylabel = "$l_y$"
+            else:
+                maximum = np.pi * self.N / self.scale
+                xlabel = "$k_x$ [Mpc$^{-1}$]"
+                ylabel = "$k_y$ [Mpc$^{-1}$]"
+
+            extent = [0, maximum, maximum, 0]
             field = np.abs(self.field[:self.N // 2, :])
-            xlabel = "$k_x$ [Mpc$^{-1}$]"
-            ylabel = "$k_y$ [Mpc$^{-1}$]"
+            cbTitle = None
 
         plt.figure()
         plt.imshow(field, extent=extent, cmap="jet")
         cb = plt.colorbar()
-
+        cb.ax.set_title(cbTitle)
         if clims is not None:
             plt.clim(clims[0], clims[1])
 

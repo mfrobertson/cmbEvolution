@@ -25,6 +25,9 @@ class CalculatePS:
         self.fftField = field.FFT()
         self.kMatrix = field.kMatrix()
         self.kp = kp
+        self.microKelvinConv = (2.72e6)**2
+        self.ellConv = 13900
+
         self.ps, self.psErrors, self.kBins = self.calculatePS(isRaw=raw, bins=bins)
         self.As, self.ns, self.paramErrors = self.getSIParams()
 
@@ -35,7 +38,7 @@ class CalculatePS:
         if isRaw:
             psFlat = (ps2D_raw).flatten()
         else:
-            psFlat = (kFlat**2) * (ps2D_raw).flatten()
+            psFlat = (kFlat**2) * (ps2D_raw).flatten() * (2*np.pi**2)**-1
 
         means, bin_edges, binnumber = stats.binned_statistic(kFlat[1:], psFlat[1:], 'mean', bins=bins)
         counts, *others = stats.binned_statistic(kFlat[1:], psFlat[1:], 'count', bins=bins)
@@ -49,30 +52,51 @@ class CalculatePS:
 
         return ps, errors, kBins
 
-    def drawPS(self, title="$k^2P(k)$", siFit=False):
-        plt.figure()
-        plt.plot(self.kBins, self.ps, ".")
-        plt.errorbar(self.kBins, self.ps, yerr=self.psErrors, ls="None")
+    def drawPS(self, title=None, siFit=False, units=False):
+        if units:
+            ell = self.kBins * self.ellConv
+            ps = self.ps * self.microKelvinConv
+            psErrors = self.psErrors * (2.72e6)**2
+
+            plt.figure()
+            plt.plot(ell, ps, ".")
+            plt.errorbar(ell, ps, yerr=psErrors, ls="None")
+
+            xlabel = "$l$"
+            ylabel = r"$\dfrac{k^2}{2\pi^2}P(k)$ [$\mu$K$^2$]"
+
+            spacings = np.linspace(0, ell[-1], 100)
+            fitPS = self.siFitFunc_withUnits(spacings, self.As, self.ns - 1)
+        else:
+            plt.figure()
+            plt.plot(self.kBins, self.ps, ".")
+            plt.errorbar(self.kBins, self.ps, yerr=self.psErrors, ls="None")
+
+            xlabel = ("$k$ [Mpc]$^{-1}$")
+            ylabel = (r"$\dfrac{k^2}{2\pi^2}P(k)$")
+
+            spacings = np.linspace(0, self.kBins[-1], 100)
+            fitPS = self.siFitFunc(spacings, self.As, self.ns - 1)
 
         if siFit:
-            fitKs = np.linspace(0, self.kBins[-1], 100)
-            fitPS = self.siFitFunc(fitKs, self.As * 2*np.pi**2, self.ns - 1)
-            plt.plot(fitKs, fitPS)
-
+            plt.plot(spacings, fitPS)
             txtStr = f"$A_s = ${self.As:.3e}$\pm${self.paramErrors[0]:.1e}\n$k_p = ${self.kp}\n$n_s = ${self.ns:.4f}$\pm${self.paramErrors[1]:.1e}"
             plt.text(0.8, 0.85, txtStr, horizontalalignment='center',verticalalignment='center', transform=plt.gca().transAxes)
 
         plt.title(title)
-        plt.xlabel("$k$ [Mcp]$^{-1}$")
-        plt.ylabel("$k^2P(k)$ [arb]")
+        plt.xlabel(xlabel)
+        plt.ylabel(ylabel)
         plt.draw()
+
+    def siFitFunc_withUnits(self, k, a, b):
+        return a * (k / (self.kp*self.ellConv))**b * self.microKelvinConv
 
     def siFitFunc(self, k, a, b):
         return a * (k / self.kp)**b
 
     def getSIParams(self):
         popt, pcov = optimize.curve_fit(self.siFitFunc, self.kBins, self.ps)
-        As = popt[0]/(2 * np.pi**2)
+        As = popt[0]
         ns = popt[1] + 1
         err = np.sqrt(np.diag(pcov))
         return As, ns, err
