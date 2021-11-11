@@ -4,7 +4,8 @@
 Basic scripts for creating and evolving fields with [CAMB](https://camb.info/) transfer functions.
 
 ### Examples
-For examples of creating instances of scale invariant fields and evolving them with transfer functions, see ```fieldRealisation.ipynb```.
+For examples of creating instances of scale invariant fields and evolving them with transfer functions, see the
+[notebook](https://nbviewer.org/github/mfrobertson/cmbEvolution/blob/main/fieldRealisation.ipynb).
 For a quick example of building a video see ```example.py```
 
 ### Requirements
