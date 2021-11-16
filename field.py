@@ -22,6 +22,14 @@ class Field:
     def kMatrix(self):
         return Kmatrix(self.N, self.scale).kM
 
+    def sampleKs(self, N_perLog=200):
+        kmin = 2 * np.pi / self.scale
+        kmax = np.pi * self.N / self.scale
+        kmin_round = np.int(np.floor(np.log10(kmin)))
+        kmax_round = np.int(np.ceil(np.log10(kmax)))
+        Nsamples = (kmax_round - kmin_round)*N_perLog
+        return np.logspace(kmin_round, kmax_round, Nsamples)
+
     def drawField(self, title=None, clims=None, cbar=True, units=False):
         if self.space == "physical":
             extent = [0, self.scale, 0, self.scale]

@@ -7,7 +7,7 @@ import platform
 
 class Video:
 
-    def __init__(self, name, loc, N=1024, scale=1000, ks=np.logspace(-4, 1, 1000), etas=range(1,300), delPics=True, clims=None):
+    def __init__(self, name, loc, N=1024, scale=1000, ks=None, etas=range(1,300), delPics=True, clims=None):
         self.name = name
         self.loc = loc
         self.N = N
@@ -31,6 +31,9 @@ class Video:
     def buildVideo(self):
         fr = FieldRealisation(self.N, self.scale)
         fr.buildSI()
+
+        if self.ks is None:
+            self.ks = fr.siField.sampleKs()
 
         picDir = self.drawPics(fr)
 

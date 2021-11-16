@@ -29,7 +29,7 @@ class FieldRealisation:
         if self.siField is None:
             self.buildSI()
 
-        sample_ks = np.logspace(-4, 1, 1000)
+        sample_ks = self.siField.sampleKs()
         if tf_raw is None:
             tf_raw = TransferFuncs(sample_ks, eta, source).tfs[:, 0, 0]
         spl = interpolate.InterpolatedUnivariateSpline(sample_ks, tf_raw)
