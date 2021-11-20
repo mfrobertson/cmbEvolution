@@ -14,7 +14,7 @@ class GeneratePS:
     def psMatrix(self):
         self.kM[0, 0] = 1  # Avoid division by 0 where possible
         with np.errstate(divide='ignore'):
-            psM = 2*np.pi**2 * self.kM**(-2) * self.As * (self.kM / self.kp) ** (self.ns - 1)
+            psM = 2*np.pi * self.kM**(-2) * self.As * (self.kM / self.kp) ** (self.ns - 1)
         self.kM[0, 0] = 0  # Resetting
         return psM
 
@@ -25,8 +25,8 @@ class CalculatePS:
         self.fftField = field.FFT()
         self.kMatrix = field.kMatrix()
         self.kp = kp
-        self.microKelvinConv = (2.72e6)**2
-        self.ellConv = 13900
+        self.microKelvinSqr = (2.725e6)**2
+        self.distToLastScatter = 13900
 
         self.ps, self.psErrors, self.kBins = self.calculatePS(isRaw=raw, bins=bins)
         self.As, self.ns, self.paramErrors = self.getSIParams()
@@ -38,7 +38,7 @@ class CalculatePS:
         if isRaw:
             psFlat = (ps2D_raw).flatten()
         else:
-            psFlat = (kFlat**2) * (ps2D_raw).flatten() * (2*np.pi**2)**-1
+            psFlat = (kFlat**2) * (ps2D_raw).flatten() * (2*np.pi)**-1
 
         means, bin_edges, binnumber = stats.binned_statistic(kFlat[1:], psFlat[1:], 'mean', bins=bins)
         counts, *others = stats.binned_statistic(kFlat[1:], psFlat[1:], 'count', bins=bins)
@@ -54,16 +54,16 @@ class CalculatePS:
 
     def drawPS(self, title=None, siFit=False, units=False):
         if units:
-            ell = self.kBins * self.ellConv
-            ps = self.ps * self.microKelvinConv
-            psErrors = self.psErrors * (2.72e6)**2
+            ell = self.kBins * self.distToLastScatter
+            ps = self.ps * self.microKelvinSqr
+            psErrors = self.psErrors * self.microKelvinSqr
 
             plt.figure()
             plt.plot(ell, ps, ".")
             plt.errorbar(ell, ps, yerr=psErrors, ls="None")
 
             xlabel = "$l$"
-            ylabel = r"$\dfrac{k^2}{2\pi^2}P(k)$ [$\mu$K$^2$]"
+            ylabel = r"$\dfrac{k^2}{2\pi}P(k)$ [$\mu$K$^2$]"
 
             spacings = np.linspace(0, ell[-1], 100)
             fitPS = self.siFitFunc_withUnits(spacings, self.As, self.ns - 1)
@@ -73,7 +73,7 @@ class CalculatePS:
             plt.errorbar(self.kBins, self.ps, yerr=self.psErrors, ls="None")
 
             xlabel = ("$k$ [Mpc]$^{-1}$")
-            ylabel = (r"$\dfrac{k^2}{2\pi^2}P(k)$")
+            ylabel = (r"$\dfrac{k^2}{2\pi}P(k)$")
 
             spacings = np.linspace(0, self.kBins[-1], 100)
             fitPS = self.siFitFunc(spacings, self.As, self.ns - 1)
@@ -89,7 +89,7 @@ class CalculatePS:
         plt.draw()
 
     def siFitFunc_withUnits(self, k, a, b):
-        return a * (k / (self.kp*self.ellConv))**b * self.microKelvinConv
+        return a * (k / (self.kp*self.distToLastScatter))**b * self.microKelvinSqr
 
     def siFitFunc(self, k, a, b):
         return a * (k / self.kp)**b

@@ -34,7 +34,8 @@ class Field:
         if self.space == "physical":
             extent = [0, self.scale, 0, self.scale]
             if units:
-                field = self.field * 2.72e6*2*np.pi**2
+                microKelvin = 2.725e6
+                field = self.field * microKelvin       # This previously was multiplied by extra factor of 2*pi^2, why?
                 cbTitle = "$\Delta\mu$K"
             else:
                 field = self.field
