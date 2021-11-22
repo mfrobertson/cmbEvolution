@@ -12,11 +12,11 @@ class Field:
         self.space = space
 
     def FFT(self):
-        fieldFFT = fft.rfftn(self.field)
+        fieldFFT = fft.rfftn(self.field, norm="ortho")
         return Field(fieldFFT, self.N, self.scale, "fourier")
 
     def iFFT(self):
-        field = fft.irfftn(self.field)
+        field = fft.irfftn(self.field, norm="ortho")
         return Field(field, self.N, self.scale, "physical")
 
     def kMatrix(self):
