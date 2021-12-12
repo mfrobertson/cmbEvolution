@@ -119,7 +119,7 @@ class Field:
             extent = [0, self.scale, 0, self.scale]
             if units:
                 microKelvin = 2.725e6
-                field = self.field * microKelvin       # This previously was multiplied by extra factor of 2*pi^2, why?
+                field = self.field * microKelvin
                 cbTitle = "$\Delta\mu$K"
             else:
                 field = self.field
