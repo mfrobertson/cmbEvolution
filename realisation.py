@@ -17,10 +17,8 @@ class FieldRealisation:
         Number of pixels of array.
     scale : int or float
         Physical length of field [Mpc].
-    kM : 2D-array
-        k-values.
-    sigM : 2D-array
-        The calculated standard deviations of the momentum-space scale invariant field.
+    kM : ndarray
+        2D array of k-values.
     fftField : Field
         The momentum-space field.
     siField : Field
@@ -45,7 +43,7 @@ class FieldRealisation:
 
         self.kM = self.kMatrix()
 
-        self.sigM = None
+        self._sigM = None
         self.fftField = None
         self.siField = None
         self.realField = None
@@ -68,7 +66,7 @@ class FieldRealisation:
         -------
         None
         """
-        self.sigM = self._sigMatrix(As, ns, kp)
+        self._sigM = self._sigMatrix(As, ns, kp)
         self.fftField = Field(self._fftMatrix(), self.N, self.scale, "fourier")
         self.realField = self.fftField.iFFT()
         self.siField = copy.deepcopy(self.realField)
@@ -109,8 +107,8 @@ class FieldRealisation:
 
         Returns
         -------
-        2D array
-            k-values.
+        ndarray
+            2D array of k-values.
         """
         return Kmatrix(self.N, self.scale).kM
 
@@ -125,7 +123,7 @@ class FieldRealisation:
 
     def _fftMatrix(self):
         gaussM = self._complexGaussMatrix()
-        return self._enforceRealSymmetries(gaussM * self.sigM)
+        return self._enforceRealSymmetries(gaussM * self._sigM)
 
     def _enforceRealSymmetries(self, fftM):
 

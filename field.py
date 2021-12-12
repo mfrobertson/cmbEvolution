@@ -9,8 +9,8 @@ class Field:
 
     Attributes
     ----------
-    field : 2D-array
-        2D square array.
+    field : ndarray
+        2D square real valued array.
     N : int
         Number of pixels of array.
     scale : int or float
@@ -25,8 +25,8 @@ class Field:
 
         Parameters
         ----------
-        field : 2D-array
-            2D square array.
+        field : ndarray
+            2D square real valued array.
         N : int
             Number of pixels of array.
         scale : int or float
@@ -69,8 +69,8 @@ class Field:
 
         Returns
         -------
-        2D array
-            k-values.
+        ndarray
+            2D array of k-values.
         """
         return Kmatrix(self.N, self.scale).kM
 
@@ -85,8 +85,8 @@ class Field:
 
         Returns
         -------
-        1D array
-            Sampled k-values.
+        ndarray
+            1D array of sampled k-values.
         """
         kmin = 2 * np.pi / self.scale
         kmax = np.pi * self.N / self.scale
@@ -169,8 +169,8 @@ class Kmatrix:
         Number of pixels of real array.
     scale : int or float
         Physical length of field [Mpc].
-    kM : 2D array
-        Calculated k-values.
+    kM : ndarray
+        2D array of calculated k-values.
     """
 
     def __init__(self, N, scale):

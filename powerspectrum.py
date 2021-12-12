@@ -10,16 +10,16 @@ class ScaleInvariantPSM:
 
     Attributes
     ----------
-    kM : 2D-array
-        k-values over which the power spectrum will be calculated at.
+    kM : ndarray
+        2D array of k-values over which the power spectrum will be calculated at.
     As : int or float
         Amplitude of scalar fluctuations at the pivot scale.
     ns: float
         Scalar spectral index.
     kp: int or float
         Pivot scale.
-    psM : 2D-array
-        Value of the power spectrum at each point in the momentum space given by kM.
+    psM : ndarray
+        2D array containing the value of the power spectrum at each point in the momentum space given by kM.
     """
 
     def __init__(self, kM, As=2.1e-9, ns=0.96, kp=0.05):
@@ -28,8 +28,8 @@ class ScaleInvariantPSM:
 
         Parameters
         ----------
-        kM : 2D-array
-            k-values over which the power spectrum will be calculated at.
+        kM : ndarray
+            2D array of k-values over which the power spectrum will be calculated at.
         As : int or float
             Amplitude of scalar fluctuations at the pivot scale.
         ns: float
@@ -59,22 +59,22 @@ class CalculatePS:
     ----------
     fftField : Field
         Fourier transformed field.
-    kM : 2D-array
-        The momentum-space k-values corresponding the field.
+    kM : ndarray
+        2D array of the momentum-space k-values corresponding the field.
     kp :
         Pivot scale.
-    ps : 1D array
-        Calculated mean power spectrum at each bin.
-    psErrors : 1D array
-        Error in the mean of each ps bin.
-    kBins : 1D array
-        Mode k-value of each k-bin.
+    ps : ndarray
+        1D array of the calculated mean value of the power spectrum over each k-bin.
+    psErrors : ndarray
+        1D array of the error in the mean at each k-bin.
+    kBins : ndarray
+        1D array of the mode k-value in each k-bin.
     As : float
         Calculated inflationary parameter.
     ns : float
         Calculated inflationary parameter.
-    paramErrors : array
-        Fit error in each calculated inflationary parameter.
+    paramErrors : list
+        Length 2 list containing the fit error in each calculated inflationary parameter.
     """
 
     def __init__(self, field, raw=False, kp=0.05, bins=10):
@@ -130,8 +130,10 @@ class CalculatePS:
         ----------
         title : str
             Plot title.
-        siFit : Include fit of scale invariant parameters.
-        units : Convert units to Kelvin squared, and ell
+        siFit : bool
+            Include fit of scale invariant parameters.
+        units : bool
+            Convert units to Kelvin squared, and ell.
 
         Returns
         -------

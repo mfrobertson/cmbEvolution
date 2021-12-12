@@ -8,14 +8,14 @@ class TransferFuncs:
 
     Attributes
     ----------
-    ks : array
+    ks : list or ndarray
         Sample k-values at which transfer function is calculated at.
-    etas : array
+    etas : list or ndarray
         Sample conformal times at which transfer function is calculated at.
     source : str
         Name of CAMB transfer function to calculate.
-    tfs : 3D-array
-        Calculated transfer functions.
+    tfs : ndarray
+        3D array of calculated transfer functions, [ks, etas, source].
     """
 
     def __init__(self, ks, etas, source="monopole"):
@@ -24,9 +24,9 @@ class TransferFuncs:
 
         Parameters
         ----------
-        ks : array
+        ks : list or ndarray
             Sample k-values at which transfer function is calculated at.
-        etas : array
+        etas : list or ndarray
             Sample conformal times at which transfer function is calculated at.
         source : str
             Name of CAMB transfer function to calculate.

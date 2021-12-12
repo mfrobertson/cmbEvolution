@@ -18,9 +18,9 @@ class Video:
         Number of pixels of array.
     scale : int or float
         Physical length of field [Mpc].
-    ks : array
+    ks : list or ndarray
         Sample k-values at which transfer function is calculated at.
-    etas : array
+    etas : list or ndarray
         Sample conformal times at which transfer function is calculated at.
     clims : 2-tuple
         Colorbar limits.
@@ -40,9 +40,9 @@ class Video:
             Number of pixels of array.
         scale : int or float
             Physical length of field [Mpc].
-        ks : array
+        ks : list or ndarray
             Sample k-values at which transfer function is calculated at.
-        etas : array
+        etas : list or ndarray
             Sample conformal times at which transfer function is calculated at.
         delPics : bool
             Delete directory containing png snapshots.
