@@ -2,16 +2,48 @@ import numpy as np
 from scipy import stats, optimize
 import matplotlib.pyplot as plt
 
-class GeneratePS:
 
-    def __init__(self, kMatrix, As=2.1e-9, ns=0.96, kp=0.05):
-        self.kM = kMatrix
+class ScaleInvariantPSM:
+    """
+    Calculates the values of the inflationary produced scale-invariant power spectrum at specific points in momentum
+    space.
+
+    Attributes
+    ----------
+    kM : 2D-array
+        k-values over which the power spectrum will be calculated at.
+    As : int or float
+        Amplitude of scalar fluctuations at the pivot scale.
+    ns: float
+        Scalar spectral index.
+    kp: int or float
+        Pivot scale.
+    psM : 2D-array
+        Value of the power spectrum at each point in the momentum space given by kM.
+    """
+
+    def __init__(self, kM, As=2.1e-9, ns=0.96, kp=0.05):
+        """
+        Constructor.
+
+        Parameters
+        ----------
+        kM : 2D-array
+            k-values over which the power spectrum will be calculated at.
+        As : int or float
+            Amplitude of scalar fluctuations at the pivot scale.
+        ns: float
+            Scalar spectral index.
+        kp: int or float
+            Pivot scale.
+        """
+        self.kM = kM
         self.As = As
         self.ns = ns
         self.kp = kp
-        self.psM = self.psMatrix()
+        self.psM = self._psMatrix()
 
-    def psMatrix(self):
+    def _psMatrix(self):
         self.kM[0, 0] = 1  # Avoid division by 0 where possible
         with np.errstate(divide='ignore'):
             psM = 2*np.pi * self.kM**(-2) * self.As * (self.kM / self.kp) ** (self.ns - 1)
@@ -20,20 +52,58 @@ class GeneratePS:
 
 
 class CalculatePS:
+    """
+    Calculates the power spectrum of a given field over a number of k-bins.
+
+    Attributes
+    ----------
+    fftField : Field
+        Fourier transformed field.
+    kM : 2D-array
+        The momentum-space k-values corresponding the field.
+    kp :
+        Pivot scale.
+    ps : 1D array
+        Calculated mean power spectrum at each bin.
+    psErrors : 1D array
+        Error in the mean of each ps bin.
+    kBins : 1D array
+        Mode k-value of each k-bin.
+    As : float
+        Calculated inflationary parameter.
+    ns : float
+        Calculated inflationary parameter.
+    paramErrors : array
+        Fit error in each calculated inflationary parameter.
+    """
 
     def __init__(self, field, raw=False, kp=0.05, bins=10):
+        """
+        Constructor.
+
+        Parameters
+        ----------
+        field : Field
+            Field from which to calculate power spectrum.
+        raw : bool
+            Calculate 'raw' power spectrum.
+        kp : float
+            Pivot scale.
+        bins : int
+            Number of k-bins.
+        """
         self.fftField = field.FFT()
-        self.kMatrix = field.kMatrix()
+        self.kM = field.kMatrix()
         self.kp = kp
-        self.microKelvinSqr = (2.725e6)**2
-        self.distToLastScatter = 13900
+        self._microKelvinSqr = (2.725e6)**2
+        self._distToLastScatter = 13900
 
-        self.ps, self.psErrors, self.kBins = self.calculatePS(isRaw=raw, bins=bins)
-        self.As, self.ns, self.paramErrors = self.getSIParams()
+        self.ps, self.psErrors, self.kBins = self._calculatePS(isRaw=raw, bins=bins)
+        self.As, self.ns, self.paramErrors = self._getSIParams()
 
-    def calculatePS(self, isRaw, bins):
+    def _calculatePS(self, isRaw, bins):
         ps2D_raw = np.abs(self.fftField.field)**2
-        kFlat = self.kMatrix.flatten()
+        kFlat = self.kM.flatten()
 
         if isRaw:
             psFlat = (ps2D_raw).flatten()
@@ -53,10 +123,24 @@ class CalculatePS:
         return ps, errors, kBins
 
     def drawPS(self, title=None, siFit=False, units=False):
+        """
+        Quick Method for drawing Matplotlib plot of power spectrum.
+
+        Parameters
+        ----------
+        title : str
+            Plot title.
+        siFit : Include fit of scale invariant parameters.
+        units : Convert units to Kelvin squared, and ell
+
+        Returns
+        -------
+
+        """
         if units:
-            ell = self.kBins * self.distToLastScatter
-            ps = self.ps * self.microKelvinSqr
-            psErrors = self.psErrors * self.microKelvinSqr
+            ell = self.kBins * self._distToLastScatter
+            ps = self.ps * self._microKelvinSqr
+            psErrors = self.psErrors * self._microKelvinSqr
 
             plt.figure()
             plt.plot(ell, ps, ".")
@@ -66,7 +150,7 @@ class CalculatePS:
             ylabel = r"$\dfrac{k^2}{2\pi}P(k)$ [$\mu$K$^2$]"
 
             spacings = np.linspace(0, ell[-1], 100)
-            fitPS = self.siFitFunc_withUnits(spacings, self.As, self.ns - 1)
+            fitPS = self._siFitFunc_withUnits(spacings, self.As, self.ns - 1)
         else:
             plt.figure()
             plt.plot(self.kBins, self.ps, ".")
@@ -76,7 +160,7 @@ class CalculatePS:
             ylabel = (r"$\dfrac{k^2}{2\pi}P(k)$")
 
             spacings = np.linspace(0, self.kBins[-1], 100)
-            fitPS = self.siFitFunc(spacings, self.As, self.ns - 1)
+            fitPS = self._siFitFunc(spacings, self.As, self.ns - 1)
 
         if siFit:
             plt.plot(spacings, fitPS)
@@ -88,14 +172,14 @@ class CalculatePS:
         plt.ylabel(ylabel)
         plt.draw()
 
-    def siFitFunc_withUnits(self, k, a, b):
-        return a * (k / (self.kp*self.distToLastScatter))**b * self.microKelvinSqr
+    def _siFitFunc_withUnits(self, k, a, b):
+        return a * (k / (self.kp*self._distToLastScatter))**b * self._microKelvinSqr
 
-    def siFitFunc(self, k, a, b):
+    def _siFitFunc(self, k, a, b):
         return a * (k / self.kp)**b
 
-    def getSIParams(self):
-        popt, pcov = optimize.curve_fit(self.siFitFunc, self.kBins, self.ps)
+    def _getSIParams(self):
+        popt, pcov = optimize.curve_fit(self._siFitFunc, self.kBins, self.ps)
         As = popt[0]
         ns = popt[1] + 1
         err = np.sqrt(np.diag(pcov))

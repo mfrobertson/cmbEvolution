@@ -1,19 +1,43 @@
 import camb
-import numpy as np
 from camb.symbolic import *
 
 
 class TransferFuncs:
+    """
+    Calculates CAMB transfer function.
 
-    def __init__(self, ks, conformalTimes, source="monopole"):
+    Attributes
+    ----------
+    ks : array
+        Sample k-values at which transfer function is calculated at.
+    etas : array
+        Sample conformal times at which transfer function is calculated at.
+    source : str
+        Name of CAMB transfer function to calculate.
+    tfs : 3D-array
+        Calculated transfer functions.
+    """
+
+    def __init__(self, ks, etas, source="monopole"):
+        """
+        Constructor.
+
+        Parameters
+        ----------
+        ks : array
+            Sample k-values at which transfer function is calculated at.
+        etas : array
+            Sample conformal times at which transfer function is calculated at.
+        source : str
+            Name of CAMB transfer function to calculate.
+        """
 
         self.ks = ks
-        self.times = conformalTimes
+        self.etas = etas
         self.source = source
-        self.tfs = self.generateFuncs()
+        self.tfs = self._generateFuncs()
 
-    def generateFuncs(self):
-
+    def _generateFuncs(self):
         pars = camb.CAMBparams()
         #pars.set_accuracy(AccuracyBoost=2)
         pars.set_cosmology(H0=67.5, ombh2=0.022, omch2=0.122)
@@ -21,11 +45,8 @@ class TransferFuncs:
 
         if self.source == "monopole":
             monopole_source = get_scalar_temperature_sources()[0]
-            transferFuncs = data.get_time_evolution(self.ks, self.times, [monopole_source/visibility])
+            transferFuncs = data.get_time_evolution(self.ks, self.etas, [monopole_source/visibility])
             return transferFuncs
 
-        transferFuncs = data.get_time_evolution(self.ks, self.times, [self.source])
+        transferFuncs = data.get_time_evolution(self.ks, self.etas, [self.source])
         return transferFuncs
-
-    def saveFuncs(self, name):
-        np.save(f"TFs/{name}", self.tfs)

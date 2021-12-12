@@ -1,4 +1,3 @@
-import numpy as np
 import matplotlib.pyplot as plt
 from realisation import FieldRealisation
 from transfers import TransferFuncs
@@ -6,8 +5,50 @@ import os
 import platform
 
 class Video:
+    """
+    Generates video of monopole source evolution, and saves output as mp3 file.
+
+    Attributes
+    ----------
+    name : str
+        Output filename.
+    loc : str
+        Output directory.
+    N : int
+        Number of pixels of array.
+    scale : int or float
+        Physical length of field [Mpc].
+    ks : array
+        Sample k-values at which transfer function is calculated at.
+    etas : array
+        Sample conformal times at which transfer function is calculated at.
+    clims : 2-tuple
+        Colorbar limits.
+    """
 
     def __init__(self, name, loc, N=1024, scale=1000, ks=None, etas=range(1,300), delPics=True, clims=None):
+        """
+        Constructor.
+
+        Parameters
+        ----------
+        name : str
+            Output filename.
+        loc : str
+            Output directory.
+        N : int
+            Number of pixels of array.
+        scale : int or float
+            Physical length of field [Mpc].
+        ks : array
+            Sample k-values at which transfer function is calculated at.
+        etas : array
+            Sample conformal times at which transfer function is calculated at.
+        delPics : bool
+            Delete directory containing png snapshots.
+        clims : 2-tuple
+            Colorbar limits.
+        """
         self.name = name
         self.loc = loc
         self.N = N
@@ -15,37 +56,37 @@ class Video:
         self.ks = ks
         self.etas = etas
         self.clims = clims
-        self.fileSep = self.getFileSep()
+        self._fileSep = self._getFileSep()
 
-        picDir = self.buildVideo()
+        picDir = self._buildVideo()
 
         if delPics:
-            self.delDir(picDir)
+            self._delDir(picDir)
 
-    def getFileSep(self):
+    def _getFileSep(self):
         if platform.system() == "Windows":
             return r"\\"
         else:
             return r"/"
 
-    def buildVideo(self):
+    def _buildVideo(self):
         fr = FieldRealisation(self.N, self.scale)
         fr.buildSI()
 
         if self.ks is None:
             self.ks = fr.siField.sampleKs()
 
-        picDir = self.drawPics(fr)
+        picDir = self._drawPics(fr)
 
         os.chdir(os.getcwd())
         os.chdir(self.loc)
-        files = picDir + self.fileSep + "field_%02d.png"
+        files = picDir + self._fileSep + "field_%02d.png"
         os.system(fr'ffmpeg -i {files} -filter:v "setpts=2*PTS" -r 30 -pix_fmt yuv420p -y {self.name}.mp4')
 
         return picDir
 
-    def drawPics(self, fr):
-        dir = fr"{self.loc + self.fileSep}pics_{self.N}_{self.scale}"
+    def _drawPics(self, fr):
+        dir = fr"{self.loc + self._fileSep}pics_{self.N}_{self.scale}"
         if not os.path.isdir(self.loc):
             os.mkdir(self.loc)
             os.mkdir(dir)
@@ -63,12 +104,12 @@ class Video:
             plt.margins(0, 0)
             plt.gca().xaxis.set_major_locator(plt.NullLocator())
             plt.gca().yaxis.set_major_locator(plt.NullLocator())
-            plt.savefig(rf"{dir + self.fileSep}field_%02d.png" % eta, bbox_inches='tight', pad_inches=0)
+            plt.savefig(rf"{dir + self._fileSep}field_%02d.png" % eta, bbox_inches='tight', pad_inches=0)
 
             plt.close()
         return dir
 
-    def delDir(self, dir):
+    def _delDir(self, dir):
         os.chdir(os.getcwd())
         os.chdir(self.loc)
         os.system(f"rd /Q /S {dir}")
